@@ -20,6 +20,11 @@ export class UserService {
     created_at: new Date().valueOf()
   }];
 
+  /**
+   * Returns all the users in the database.
+   * 
+   * @returns array of users
+   */
   async findAll(): Promise<User[] | null> {
     const rawUsers = this.users.slice();
     const users = rawUsers.map((user) => {
@@ -30,6 +35,12 @@ export class UserService {
     return users;
   }
 
+  /**
+   * Finds an user by id
+   * 
+   * @param _id string - User id
+   * @returns User model or null
+   */
   async findById(_id: string): Promise<User | null> {
     const findedUser = this.users.find((user) => user._id.toString() === _id.toString());
 
@@ -40,6 +51,12 @@ export class UserService {
     return findedUser;
   }
 
+  /**
+   * Creates an instance of a user
+   * 
+   * @param payload object containing a set of key-value with the required values to create an user
+   * @returns The created user
+   */
   async create(payload: any): Promise<User> {
     try {
       const newUser: User = {
@@ -70,10 +87,52 @@ export class UserService {
     }
   }
 
-  async updateById(_id: string, payload: any) {
+  /**
+   * Updates an user by id and a payload.
+   * 
+   * @param _id User id
+   * @param payload Object containing the values to update the user
+   * @returns The updated user or false in case there are errors
+   */
+  async updateById(_id: string, payload: any): Promise<User | boolean> {
+    const user = this.users.find((usr) => usr._id.toString() === _id.toString());
 
+    if (user === undefined) {
+      return false;
+    }
+
+    //? name
+    if (typeof payload?.full_name === "string" && payload?.full_name?.length > 2) {
+      user.full_name = payload?.full_name;
+    }
+
+    //? email
+    if (typeof payload?.email === "string" && payload?.email?.length > 6) {
+      user.email = payload?.email;
+    }
+
+    //...
+
+    return user;
   }
 
-  async deleteById(_id: string) { }
+  /**
+   * Deletes an user by id
+   * 
+   * @param _id User id
+   * @returns The deleted user or false in case of an error
+   */
+  async deleteById(_id: string): Promise<User | boolean> {
+    const deletedUser = this.users.find((usr) => usr._id.toString() === _id.toString());
+
+    if (deletedUser === undefined) {
+      return false;
+    }
+
+    this.users.filter((usr) => usr._id.toString() !== _id.toString());
+
+    return deletedUser;
+
+  }
 
 }

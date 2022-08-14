@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "../../models/user.model";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+
+import { User } from "../../models/user.model";
+import { CreateUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
 
 @Injectable()
 export class UserService {
@@ -52,12 +54,25 @@ export class UserService {
   }
 
   /**
+   * Returns user by account status.
+   * If false, it will return deleted accounts.
+   * 
+   * @param status status of account
+   * @returns User model
+   */
+  async findByAccountStatus(status: boolean): Promise<User[]> {
+    const userByStatus = this.users.filter((user) => user.deleted === status);
+
+    return userByStatus;
+  }
+
+  /**
    * Creates an instance of a user
    * 
    * @param payload object containing a set of key-value with the required values to create an user
    * @returns The created user
    */
-  async create(payload: any): Promise<User> {
+  async create(payload: CreateUserDTO): Promise<User> {
     try {
       const newUser: User = {
         _id: uuidv4(),
@@ -73,7 +88,7 @@ export class UserService {
 
       if (payload.auth_provider === "email") {
         const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync(payload.password, salt);
+        const hashedPassword = bcrypt.hashSync(payload?.password || "", salt);
 
         newUser.password = hashedPassword;
       }
@@ -94,7 +109,7 @@ export class UserService {
    * @param payload Object containing the values to update the user
    * @returns The updated user or false in case there are errors
    */
-  async updateById(_id: string, payload: any): Promise<User | boolean> {
+  async updateById(_id: string, payload: UpdateUserDTO): Promise<User | boolean> {
     const user = this.users.find((usr) => usr._id.toString() === _id.toString());
 
     if (user === undefined) {

@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 
-import { UserService } from "src/services/user/user.service";
+import { UserService } from "../../services/user/user.service";
+import { ParseBooleanPipe } from "../../common/parse-boolean.pipe";
+import { CreateUserDTO } from "../../dtos/user.dto";
 
 @Controller("user")
 export class UserController {
@@ -19,6 +21,22 @@ export class UserController {
           users: users
         },
         message: "[sucess]",
+        redirect: false
+      }
+    };
+  }
+
+  @Get("/status/:status")
+  async getUsersByStatus(@Param("status", ParseBooleanPipe) status: boolean) {
+    const users = await this.userService.findByAccountStatus(status);
+
+    return {
+      ok: true,
+      response: {
+        data: {
+          users: users
+        },
+        message: "[success]",
         redirect: false
       }
     };
